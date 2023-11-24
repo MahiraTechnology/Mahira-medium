@@ -7,7 +7,7 @@ include {
   path = find_in_parent_folders()
 }
 inputs = {
-  bucket_name = "s3-bucket"
+  bucket_name = "s3-bucket-block-public-access"
   block_public_acls = true
   block_public_policy = true
   ignore_public_acls = true

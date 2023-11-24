@@ -1,0 +1,32 @@
+version: 2.1
+
+orbs:
+  snyk: snyk/snyk@1.4.1
+
+jobs:
+  # snyk          
+  snyk:
+    docker:
+      - image: YOUR DOCKER IMAGE
+    working_directory: /tmp/workspace
+    environment:
+      ENV_FILE: /tmp/workspace/.circleenv
+      DOCKER_BUILDKIT: "1"
+      BUILDKIT_PROGRESS: plain       
+    steps:
+    - checkout  
+    - attach_workspace:
+          at: /tmp/workspace    
+
+    - snyk/scan:
+        token-variable: SNYK_TOKEN
+        docker-image-name: YOUR DOCKER IMAGE
+        target-file: "Dockerfile"
+        fail-on-issues: false
+
+workflows:
+  version: 2
+  main:
+    jobs:
+       - snyk:
+          context: mahira
