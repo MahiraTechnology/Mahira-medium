@@ -6,7 +6,6 @@ This repository provides infrastructure-as-code (IaC) solutions using Terragrunt
 ## Table of Contents
 
 ## Prerequisites
-
 Before you begin, ensure you have the following:
 
 AWS account with appropriate permissions
@@ -14,19 +13,19 @@ Terraform and Terragrunt installed locally
 Basic knowledge of AWS Lambda and security configurations
 Terragrunt Automation
 
+## Getting Started
 Clone the repository to your local machine:
 git clone https://github.com/MahiraTechnology/Mahira-medium.git
 
 Navigate to the terragrunt directory:
 cd lambda-policy/lambda
-Update the lambda-policy/terragrunt.hcl file with your AWS credentials and desired configuration.
+Update the lambda-policy/lambda/terragrunt.hcl file with your AWS credentials and desired configuration.
 
 Run Terragrunt commands to apply the infrastructure changes:
 terragrunt init
 terragrunt apply
 
 Confirm the changes when prompted.
-
 Manual Procedures
 If you prefer manual configuration, follow these step-by-step procedures:
 
