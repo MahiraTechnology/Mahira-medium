@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: This stack deploys a RDS instance.
+Parameters:
+  EnvironmentName:
+    Description: Environment name for the application
+    Type: String
+  DBInstanceIdentifier:
+    Description: Name of DB instance
+    Type: String
+  EmailAddressParam:
+    Description: Email Address for sending RDS related notifications
+    Type: String
+Resources:
+  RDSMonitoringSNSTopic:
+    Type: AWS::SNS::Topic
+    Properties: 
+      DisplayName: !Sub "${EnvironmentName}-rds-notification-topic"
+      Tags: 
+      - Key: "Project"
+        Value: "DataPipeline"
+      Subscription: 
+      - Endpoint: !Ref EmailAddressParam
+        Protocol: email
+  RDSMonitoringSNSTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+        - !Ref RDSMonitoringSNSTopic
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: '*'
+            Action:
+              - "SNS:Publish"
+            Resource: '*'
+  RDSCPUUtilizaionAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${EnvironmentName}-${DBInstanceIdentifier} CPUUtilization Alarm'
+      AlarmActions:
+        - !Ref RDSMonitoringSNSTopic
+      AlarmDescription: !Sub '${EnvironmentName}-${DBInstanceIdentifier} CPUUtilization Alarm spiked above 60%'
+      ComparisonOperator: GreaterThanThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+      - Name: DBInstanceIdentifier
+        Value: !Ref DBInstanceIdentifier
+      EvaluationPeriods: 1
+      MetricName: CPUUtilization
+      Namespace: AWS/RDS
+      OKActions:
+        - !Ref RDSMonitoringSNSTopic
+      Period: 300
+      Statistic: Average
+      Threshold: 60
+      TreatMissingData: notBreaching
+  RDSDBConnectionAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${EnvironmentName}-${DBInstanceIdentifier} DBConnection Count Alarm'
+      AlarmActions:
+        - !Ref RDSMonitoringSNSTopic
+      AlarmDescription: !Sub '${EnvironmentName}-${DBInstanceIdentifier} DB Connection Count spiked above the allowed threshold'
+      ComparisonOperator: GreaterThanThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+      - Name: DBInstanceIdentifier
+        Value: !Ref DBInstanceIdentifier
+      EvaluationPeriods: 1
+      MetricName: DatabaseConnections
+      Namespace: AWS/RDS
+      OKActions:
+        - !Ref RDSMonitoringSNSTopic
+      Period: 300
+      Statistic: Sum
+      Threshold: 500
+      TreatMissingData: notBreaching
+Outputs: 
+  RDSMonitoringSNSTopicArn:
+    Description: 'Sns ARN RDS Monitoring Topic'
+    Value: !Ref RDSMonitoringSNSTopic
+    Export:
+      Name: !Join ["-", [!Ref "AWS::StackName", "RDSMonitoringSNSTopicArn"]]
